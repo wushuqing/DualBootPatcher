@@ -59,17 +59,14 @@ void replace_all(std::string &source,
     replace_internal(source, from, to, false);
 }
 
-std::vector<std::string> tokenize(const std::string &str,
-                                  const std::string &delims)
+std::vector<std::string> tokenize(std::string str, const std::string &delims)
 {
-    std::vector<char> linebuf(str.begin(), str.end());
-    linebuf.resize(linebuf.size() + 1);
     std::vector<std::string> tokens;
 
     char *temp;
     char *token;
 
-    token = strtok_r(linebuf.data(), delims.c_str(), &temp);
+    token = strtok_r(str.data(), delims.c_str(), &temp);
     while (token != nullptr) {
         tokens.emplace_back(token);
 
@@ -112,11 +109,10 @@ char ** dup_cstring_list(const char * const *list)
     for (items = 0; list[items]; ++items);
     size_t size = (items + 1) * sizeof(list[0]);
 
-    copy = static_cast<char **>(malloc(size));
+    copy = static_cast<char **>(calloc(1, size));
     if (!copy) {
         return nullptr;
     }
-    memset(copy, 0, size);
 
     for (size_t i = 0; i < items; ++i) {
         copy[i] = strdup(list[i]);

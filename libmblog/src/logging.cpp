@@ -66,11 +66,12 @@ using Tid = pid_t;
 static std::shared_ptr<BaseLogger> g_logger;
 static std::mutex g_mutex;
 
-static std::string g_format{"[%t][%P:%T][%l] %n: %m"};
+static std::string g_format{"[%t][%P:%T][%l] %N: %m"};
 
 // %l - Level
 // %m - Message
 // %n - Tag
+// %N - Short tag
 // %t - Time
 // %P - Process ID
 // %T - Thread ID
@@ -289,22 +290,36 @@ static std::string _format_iso8601(const std::tm &tm, long nanoseconds,
                       std::abs(gmtoff / 60) % 60);
 }
 
-static std::string _format_prio(LogLevel prio)
+static char _format_prio(LogLevel prio)
 {
     switch (prio) {
     case LogLevel::Error:
-        return "error";
+        return 'E';
     case LogLevel::Warning:
-        return "warning";
+        return 'W';
     case LogLevel::Info:
-        return "info";
+        return 'I';
     case LogLevel::Debug:
-        return "debug";
+        return 'D';
     case LogLevel::Verbose:
-        return "verbose";
+        return 'V';
     default:
-        return {};
+        MB_UNREACHABLE("Invalid log level: %d", static_cast<int>(prio));
     }
+}
+
+static std::string _format_short_tag(std::string_view tag)
+{
+    // Keep first letter in each component
+    auto pieces = split_sv(tag, '/');
+    if (!pieces.empty()) {
+        for (auto it = pieces.begin(); it != pieces.end() - 1; ++it) {
+            if (!it->empty() && isalnum(it->front())) {
+                *it = it->substr(0, 1);
+            }
+        }
+    }
+    return join(pieces, '/');
 }
 
 static std::string _format_rec(const LogRecord &rec)
@@ -332,6 +347,10 @@ static std::string _format_rec(const LogRecord &rec)
 
             case 'n':
                 buf += rec.tag;
+                break;
+
+            case 'N':
+                buf += _format_short_tag(rec.tag);
                 break;
 
             case 't':

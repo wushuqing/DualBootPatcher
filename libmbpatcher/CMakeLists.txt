@@ -30,8 +30,9 @@ foreach(variant ${variants})
         src/private/fileutils.cpp
         src/private/miniziputils.cpp
         # Autopatchers
-        src/autopatchers/standardpatcher.cpp
+        src/autopatchers/magiskpatcher.cpp
         src/autopatchers/mountcmdpatcher.cpp
+        src/autopatchers/standardpatcher.cpp
         # Patchers
         src/patchers/odinpatcher.cpp
         src/patchers/ramdiskupdater.cpp
@@ -45,7 +46,7 @@ foreach(variant ${variants})
         include
         PRIVATE
         .
-        ${CMAKE_SOURCE_DIR}/external
+        ${CMAKE_SOURCE_DIR}/external/minizip
     )
 
     # Only build static library if needed
@@ -68,7 +69,7 @@ foreach(variant ${variants})
         $<$<STREQUAL:${variant},shared>:interface.mbcommon.dynamic-link>
         mbpio-${variant}
         mblog-${variant}
-        minizip-${variant}
+        libminizip
         LibArchive::LibArchive
     )
 
